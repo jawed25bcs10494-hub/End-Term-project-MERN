@@ -1,8 +1,8 @@
 # RetroGate — A Game History Archive
 
-**GitHub repository:** [v0-retrogate-app-development-elW5wVKNlyD](https://github.com/jawed25bcs10494-hub/v0-retrogate-app-development-elW5wVKNlyD)  
-**Deployment:** Add the public Vercel URL here after publishing.  
-**Demo video:** Add the 3–5 minute demo URL here before submitting.
+**GitHub repository:** https://github.com/jawed25bcs10494-hub/End-Term-project-MERN
+**Deployment:** https://retrogate-alpha.vercel.app/ 
+**Demo video:**
 
 ## Problem statement
 
