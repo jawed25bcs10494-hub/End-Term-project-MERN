@@ -8,7 +8,7 @@ type GameHistoryCardProps = {
 }
 
 export function GameHistoryCard({ game, isSaved, onToggleSaved }: GameHistoryCardProps) {
-  const wikiUrl = `https://en.wikipedia.org/wiki/${game.sourceSlug}`
+  const wikiUrl = `https://en.wikipedia.org/wiki/${encodeURIComponent(game.sourceSlug)}`
 
   return (
     <article className="artifact-card" aria-labelledby="artifact-title">
@@ -50,7 +50,7 @@ export function GameHistoryCard({ game, isSaved, onToggleSaved }: GameHistoryCar
         <div><span className="section-index">03 / ARCHIVE ODDITY</span><h3>Did you know?</h3><p>{game.funFact}</p></div>
       </aside>
 
-      <div className="source-row"><span>FURTHER READING</span><a href={wikiUrl} target="_blank" rel="noreferrer">Game history reference <ExternalLink size={13} /></a><span className="source-note">Curator selection; impact is an editorial judgment.</span></div>
+      <div className="source-row"><span>FURTHER READING</span><a href={wikiUrl} target="_blank" rel="noreferrer" aria-label={`Read the Wikipedia article for ${game.title}`}>Wikipedia: {game.title} <ExternalLink size={13} /></a><span className="source-note">Curator selection; impact is an editorial judgment.</span></div>
     </article>
   )
 }

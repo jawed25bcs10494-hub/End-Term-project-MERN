@@ -45,11 +45,14 @@ export function GameHistoryMuseum() {
   }
 
   function incrementDigit(index: number) {
-    setDigits((current) => current.map((digit, position) => position === index ? (digit + 1) % 10 : digit))
-  }
+    const availableDigits = [...new Set(gameHistory.map((game) => String(game.year)[index]))].sort()
+    const currentDigit = String(activeYear)[index]
+    const nextDigit = availableDigits[(availableDigits.indexOf(currentDigit) + 1) % availableDigits.length]
+    const nextGame = gameHistory
+      .filter((game) => String(game.year)[index] === nextDigit)
+      .sort((first, second) => Math.abs(first.year - activeYear) - Math.abs(second.year - activeYear) || second.year - first.year)[0]
 
-  function enterYear() {
-    selectYear(Number(digits.join('')))
+    if (nextGame) selectYear(nextGame.year)
   }
 
   function toggleSaved() {
@@ -88,10 +91,13 @@ export function GameHistoryMuseum() {
 
           <div className="vault-card">
             <div className="vault-heading"><div><span className="section-index">01 / CHRONO LOCK</span><h2>Choose a year</h2></div><span className="vault-seal"><BookOpen size={17} /></span></div>
-            <div className="tumblers" role="group" aria-label="Choose a year, then select enter">
-              {digits.map((digit, index) => <button className="tumbler" type="button" key={index} onClick={() => incrementDigit(index)} aria-label={`Increment ${['thousands', 'hundreds', 'tens', 'ones'][index]} digit, currently ${digit}`}><span className="tumbler-up"><ChevronUp size={12} /></span><span className="digit">{digit}</span><span className="tumbler-down"><ArrowDown size={11} /></span></button>)}
+            <div className="tumblers" role="group" aria-label="Jump between valid archive years by digit">
+              {digits.map((digit, index) => {
+                const availableDigits = [...new Set(gameHistory.map((game) => String(game.year)[index]))].sort()
+                return <button className="tumbler" type="button" key={index} onClick={() => incrementDigit(index)} aria-label={`Jump ${['thousands', 'hundreds', 'tens', 'ones'][index]} digit to the next valid value. Available: ${availableDigits.join(', ')}`} title={`Valid digits: ${availableDigits.join(', ')}`}><span className="tumbler-up"><ChevronUp size={12} /></span><span className="digit">{digit}</span><span className="tumbler-down"><ArrowDown size={11} /></span></button>
+              })}
             </div>
-            <div className="vault-footer"><span className="year-hint">DESTINATION YEAR · {firstHistoryYear}–{currentHistoryYear}</span><button className="enter-button" type="button" onClick={enterYear}>ENTER <ArrowRight size={15} /></button></div>
+            <div className="vault-footer"><span className="year-hint">VALID DIGITS · 1K: 1 / 2 · 100s: 0 / 9 · 10s: 0–2, 7–9 · 1s: 0–9</span></div>
             <label className="year-range-label" htmlFor="year-range">Or scrub the timeline</label>
             <input id="year-range" className="year-range" type="range" min={firstHistoryYear} max={currentHistoryYear} value={activeYear} onChange={(event) => selectYear(Number(event.currentTarget.value))} aria-label={`Browse by year. Currently ${activeYear}`} />
             <div className="range-ends"><span>{firstHistoryYear}</span><span>{currentHistoryYear} · NOW</span></div>
