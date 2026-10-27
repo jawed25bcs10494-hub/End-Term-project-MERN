@@ -3,8 +3,8 @@ import type { Metadata, Viewport } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'v0 App',
-  description: 'Created with v0',
+  title: 'RetroGate — The Arcade, Rewound',
+  description: 'A playable portal through gaming history. Set a year, explore classic arcade games, save favorites, and share strategy notes.',
   generator: 'v0.app',
   icons: {
     icon: [
