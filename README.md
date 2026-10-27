@@ -1,7 +1,5 @@
 # RetroGate — A Game History Archive
 
-**GitHub repository:** https://github.com/jawed25bcs10494-hub/End-Term-project-MERN
-
 **Deployment:** https://retrogate-alpha.vercel.app/ 
 
 **Demo video:**
