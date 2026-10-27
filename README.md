@@ -69,18 +69,3 @@ pnpm run build
 ## Environment variables
 
 No project-specific environment variables are required. The image lookup uses the public Wikimedia API and does not require an API key.
-
-## Deployment
-
-Deploy the repository with Vercel using the Next.js framework preset. No database migration or secret configuration is required. After deployment, add the public deployment URL to the link at the top of this README and verify it in a private browser window.
-
-## Demo video
-
-Record a 3–5 minute walkthrough that introduces the archive, demonstrates year navigation and search, opens a game entry, checks the image attribution/fallback, saves a pick, and adds a session note. Add the public video URL to the link at the top of this README and to the final submission form.
-
-## Submission checklist
-
-- [ ] Public deployment URL added and verified without sign-in
-- [ ] Public demo-video URL added and verified without extra permissions
-- [ ] Repository access checked in a private browser window
-- [ ] Final submission form completed: https://forms.gle/sBy4sfqyiRG2Zpom9
