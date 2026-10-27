@@ -5,27 +5,28 @@ const cacheHeaders = {
   'Cache-Control': 'public, s-maxage=86400, stale-while-revalidate=604800',
 }
 
+const userAgent = 'RetroGateGameHistory/1.0 (game artwork source attribution)'
+
 type MetadataValue = { value?: string }
-type CommonsImageInfo = {
+type WikiImageInfo = {
+  title?: string
   thumburl?: string
   descriptionurl?: string
   extmetadata?: Record<string, MetadataValue>
 }
-type CommonsPage = {
+type WikiPage = {
   title: string
-  imageinfo?: CommonsImageInfo[]
+  imageinfo?: WikiImageInfo[]
 }
-type CommonsResponse = {
-  query?: { pages?: CommonsPage[] }
+type WikiApiResponse = {
+  query?: { pages?: WikiPage[] }
 }
-
-function normalize(value: string) {
-  return value
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, ' ')
-    .trim()
+type WikiSummary = {
+  type?: string
+  title?: string
+  thumbnail?: { source?: string }
+  originalimage?: { source?: string }
+  content_urls?: { desktop?: { page?: string } }
 }
 
 function plainText(value = '') {
@@ -41,14 +42,27 @@ function plainText(value = '') {
     .trim()
 }
 
-function isAllowedUrl(value: string | undefined, host: string) {
+function isAllowedUrl(value: string | undefined, hosts: string[]) {
   if (!value) return false
   try {
     const url = new URL(value)
-    return url.protocol === 'https:' && url.hostname === host
+    return url.protocol === 'https:' && hosts.includes(url.hostname)
   } catch {
     return false
   }
+}
+
+async function queryWikipediaApi(params: Record<string, string>) {
+  const url = new URL('https://en.wikipedia.org/w/api.php')
+  for (const [key, value] of Object.entries(params)) url.searchParams.set(key, value)
+
+  const response = await fetch(url, {
+    headers: { Accept: 'application/json', 'User-Agent': userAgent },
+    next: { revalidate: 86400 },
+  })
+
+  if (!response.ok) return null
+  return await response.json() as WikiApiResponse
 }
 
 export async function GET(request: Request) {
@@ -59,69 +73,79 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Unknown archive year.' }, { status: 400 })
   }
 
-  const search = new URL('https://commons.wikimedia.org/w/api.php')
-  search.searchParams.set('action', 'query')
-  search.searchParams.set('generator', 'search')
-  search.searchParams.set('gsrsearch', game.title)
-  search.searchParams.set('gsrnamespace', '6')
-  search.searchParams.set('gsrlimit', '10')
-  search.searchParams.set('prop', 'imageinfo')
-  search.searchParams.set('iiprop', 'url|extmetadata')
-  search.searchParams.set('iiurlwidth', '1200')
-  search.searchParams.set('format', 'json')
-  search.searchParams.set('formatversion', '2')
-
   try {
-    const response = await fetch(search, {
-      headers: {
-        Accept: 'application/json',
-        'User-Agent': 'RetroGateGameHistory/1.0 (Wikimedia Commons image attribution)',
+    const articleResponse = await fetch(
+      `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(game.sourceSlug)}`,
+      {
+        headers: { Accept: 'application/json', 'User-Agent': userAgent },
+        next: { revalidate: 86400 },
       },
-      next: { revalidate: 86400 },
+    )
+
+    if (!articleResponse.ok) {
+      return NextResponse.json({ image: null }, { headers: cacheHeaders })
+    }
+
+    const article = await articleResponse.json() as WikiSummary
+    const imageUrl = article.thumbnail?.source ?? article.originalimage?.source
+    const originalImageUrl = article.originalimage?.source ?? imageUrl
+    const articleUrl = article.content_urls?.desktop?.page
+
+    if (
+      article.type !== 'standard' ||
+      !imageUrl ||
+      !originalImageUrl ||
+      !isAllowedUrl(imageUrl, ['upload.wikimedia.org']) ||
+      !isAllowedUrl(originalImageUrl, ['upload.wikimedia.org'])
+    ) {
+      return NextResponse.json({ image: null }, { headers: cacheHeaders })
+    }
+
+    const filename = decodeURIComponent(new URL(originalImageUrl).pathname.split('/').pop() ?? '')
+    if (!filename) return NextResponse.json({ image: null }, { headers: cacheHeaders })
+
+    const imageResult = await queryWikipediaApi({
+      action: 'query',
+      titles: `File:${filename}`,
+      redirects: '1',
+      prop: 'imageinfo',
+      iiprop: 'url|extmetadata',
+      iiurlwidth: '1200',
+      format: 'json',
+      formatversion: '2',
     })
+    const fileInfo = imageResult?.query?.pages?.[0]?.imageinfo?.[0]
+    const displayUrl = isAllowedUrl(fileInfo?.thumburl, ['upload.wikimedia.org'])
+      ? fileInfo?.thumburl
+      : imageUrl
 
-    if (!response.ok) {
+    if (!isAllowedUrl(displayUrl, ['upload.wikimedia.org'])) {
       return NextResponse.json({ image: null }, { headers: cacheHeaders })
     }
 
-    const result = await response.json() as CommonsResponse
-    const titleTokens = normalize(game.title).split(' ').filter((token) => token.length > 1 && !['the', 'and', 'of'].includes(token))
-    const minimumMatches = titleTokens.length <= 2 ? titleTokens.length : Math.ceil(titleTokens.length * 0.6)
-
-    const candidate = (result.query?.pages ?? [])
-      .map((page) => {
-        const image = page.imageinfo?.[0]
-        const filename = normalize(page.title.replace(/^File:/i, ''))
-        const matchCount = titleTokens.filter((token) => filename.includes(token)).length
-
-        return { page, image, matchCount }
-      })
-      .filter(({ image, matchCount }) =>
-        matchCount >= minimumMatches &&
-        isAllowedUrl(image?.thumburl, 'upload.wikimedia.org') &&
-        isAllowedUrl(image?.descriptionurl, 'commons.wikimedia.org'),
-      )
-      .sort((first, second) => second.matchCount - first.matchCount)[0]
-
-    if (!candidate?.image?.thumburl || !candidate.image.descriptionurl) {
-      return NextResponse.json({ image: null }, { headers: cacheHeaders })
-    }
-
-    const metadata = candidate.image.extmetadata ?? {}
-    const artist = plainText(metadata.Artist?.value)
-    const license = plainText(metadata.LicenseShortName?.value)
+    const metadata = fileInfo?.extmetadata ?? {}
+    const credit = plainText(metadata.Artist?.value ?? metadata.Credit?.value)
+    const license = plainText(metadata.LicenseShortName?.value ?? metadata.UsageTerms?.value)
+    const safeLicenseUrl = isAllowedUrl(metadata.LicenseUrl?.value, [
+      'creativecommons.org',
+      'www.gnu.org',
+      'gnu.org',
+    ])
+      ? metadata.LicenseUrl?.value
+      : null
 
     return NextResponse.json({
       image: {
-        url: candidate.image.thumburl,
-        alt: `${game.title} artwork from Wikimedia Commons`,
-        fileTitle: candidate.page.title.replace(/^File:/i, ''),
-        filePageUrl: candidate.image.descriptionurl,
-        artist: artist || null,
+        url: displayUrl,
+        alt: `Image from the Wikipedia article about ${game.title}`,
+        fileTitle: fileInfo?.title?.replace(/^File:/i, '') ?? filename,
+        filePageUrl: isAllowedUrl(fileInfo?.descriptionurl, ['en.wikipedia.org', 'commons.wikimedia.org'])
+          ? fileInfo?.descriptionurl
+          : articleUrl,
+        articleUrl: isAllowedUrl(articleUrl, ['en.wikipedia.org']) ? articleUrl : null,
+        artist: credit || null,
         license: license || null,
-        licenseUrl: isAllowedUrl(metadata.LicenseUrl?.value, 'creativecommons.org')
-          ? metadata.LicenseUrl?.value
-          : null,
+        licenseUrl: safeLicenseUrl,
       },
     }, { headers: cacheHeaders })
   } catch {

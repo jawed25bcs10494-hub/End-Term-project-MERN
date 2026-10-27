@@ -12,6 +12,7 @@ type GameArtworkData = {
     alt: string
     fileTitle: string
     filePageUrl: string
+    articleUrl: string | null
     artist: string | null
     license: string | null
     licenseUrl: string | null
@@ -51,7 +52,7 @@ export function GameArtwork({ game }: { game: GameHistoryEntry }) {
           <div className="game-artwork-fallback">
             <span className="artwork-fallback-year">{game.year}</span>
             <span className="artwork-fallback-title">{game.title}</span>
-            <span className="artwork-fallback-genre">{isLoading ? 'SEARCHING OPEN GAME ART' : 'ARCHIVE COVER · ' + game.genre.toUpperCase()}</span>
+            <span className="artwork-fallback-genre">{isLoading ? 'VERIFYING THE GAME ARTICLE' : 'NO VERIFIED ART · CUSTOM ARCHIVE CARD'}</span>
           </div>
         )}
       </div>
@@ -60,13 +61,15 @@ export function GameArtwork({ game }: { game: GameHistoryEntry }) {
         {showImage && artwork ? (
           <>
             <span className="artwork-credit-detail">{artwork.artist ? `Credit: ${artwork.artist}` : artwork.fileTitle}{artwork.license ? ` · ${artwork.license}` : ''}</span>
-            <a href={artwork.filePageUrl} target="_blank" rel="noopener noreferrer" aria-label={`View image credit and license for ${game.title}`}>
-              View image credit & license <ExternalLink size={12} />
+            <a href={artwork.filePageUrl} target="_blank" rel="noopener noreferrer" aria-label={`View original image, source, and rights for ${game.title}`}>
+              View original image & rights <ExternalLink size={12} />
             </a>
+            {artwork.articleUrl && <a className="artwork-license-link" href={artwork.articleUrl} target="_blank" rel="noopener noreferrer">Game article</a>}
             {artwork.licenseUrl && <a className="artwork-license-link" href={artwork.licenseUrl} target="_blank" rel="noopener noreferrer">License terms</a>}
+            <p className="artwork-rights-note">Game artwork remains the property of its respective rights holders.</p>
           </>
         ) : (
-          <span className="artwork-credit-detail">{isLoading ? 'Looking for a freely licensed image…' : 'No matching freely licensed artwork found; showing an archive cover.'}</span>
+          <span className="artwork-credit-detail">{isLoading ? 'Checking the exact game article for its cover or title-screen image…' : 'No cover or title-screen image was found in this game’s exact article. Showing a clearly labeled archive reference card instead.'}</span>
         )}
       </figcaption>
     </figure>

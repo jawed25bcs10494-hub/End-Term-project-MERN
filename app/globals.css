@@ -220,6 +220,7 @@
 .artwork-credit-detail { min-width: 0; overflow-wrap: anywhere; }
 .game-artwork-caption a { display: inline-flex; width: fit-content; max-width: 100%; grid-column: 2; align-items: center; gap: 4px; color: var(--ink); text-decoration: underline; text-decoration-color: var(--edge); text-underline-offset: 3px; }
 .game-artwork-caption a:hover { color: var(--accent); }
+.artwork-rights-note { grid-column: 2; margin: 0; color: var(--muted-ink); font-size: 8px; }
 .artifact-actions { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 13px 1px 12px; border-bottom: 1px solid color-mix(in srgb, var(--edge), transparent 20%); }
 .editorial-label { display: inline-flex; align-items: center; gap: 7px; color: var(--accent); font-size: 9px; letter-spacing: .1em; }
 .save-button { display: inline-flex; align-items: center; gap: 7px; flex-shrink: 0; padding: 7px 9px; border: 1px solid var(--edge); border-radius: 9px; color: var(--muted-ink); background: var(--panel-raised); font-size: 10px; }
