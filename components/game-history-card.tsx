@@ -1,5 +1,6 @@
 import { Cpu, ExternalLink, Lightbulb, Star, Trophy } from 'lucide-react'
 import type { GameHistoryEntry } from '@/lib/game-history'
+import { GameArtwork } from '@/components/game-artwork'
 
 type GameHistoryCardProps = {
   game: GameHistoryEntry
@@ -21,6 +22,8 @@ export function GameHistoryCard({ game, isSaved, onToggleSaved }: GameHistoryCar
         </div>
         <div className="artifact-year-stamp" aria-hidden="true">{game.year}</div>
       </div>
+
+      <GameArtwork key={game.year} game={game} />
 
       <div className="artifact-actions">
         <span className="editorial-label"><Trophy size={14} /> THE YEAR&apos;S DEFINING GAME</span>
