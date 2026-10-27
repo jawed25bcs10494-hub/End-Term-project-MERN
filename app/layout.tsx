@@ -3,8 +3,8 @@ import type { Metadata, Viewport } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'RetroGate — The Arcade, Rewound',
-  description: 'A playable portal through gaming history. Set a year, explore classic arcade games, save favorites, and share strategy notes.',
+  title: 'RetroGate — A Game History Archive',
+  description: 'Explore one influential game for every year from 1970 to today, with the stories, creators, platforms, hardware, and trivia behind each pick.',
   generator: 'v0.app',
   icons: {
     icon: [
@@ -27,10 +27,7 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   colorScheme: 'light dark',
-  themeColor: [
-    { media: '(prefers-color-scheme: light)', color: 'white' },
-    { media: '(prefers-color-scheme: dark)', color: 'black' },
-  ],
+  themeColor: '#071014',
 }
 
 export default function RootLayout({
