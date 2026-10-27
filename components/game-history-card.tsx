@@ -5,10 +5,11 @@ import { GameArtwork } from '@/components/game-artwork'
 type GameHistoryCardProps = {
   game: GameHistoryEntry
   isSaved: boolean
+  isSaveDisabled: boolean
   onToggleSaved: () => void
 }
 
-export function GameHistoryCard({ game, isSaved, onToggleSaved }: GameHistoryCardProps) {
+export function GameHistoryCard({ game, isSaved, isSaveDisabled, onToggleSaved }: GameHistoryCardProps) {
   const wikiUrl = `https://en.wikipedia.org/wiki/${encodeURIComponent(game.sourceSlug)}`
 
   return (
@@ -27,7 +28,7 @@ export function GameHistoryCard({ game, isSaved, onToggleSaved }: GameHistoryCar
 
       <div className="artifact-actions">
         <span className="editorial-label"><Trophy size={14} /> THE YEAR&apos;S DEFINING GAME</span>
-        <button className={`save-button ${isSaved ? 'is-saved' : ''}`} type="button" onClick={onToggleSaved} aria-pressed={isSaved}>
+        <button className={`save-button ${isSaved ? 'is-saved' : ''}`} type="button" onClick={onToggleSaved} aria-pressed={isSaved} disabled={isSaveDisabled}>
           <Star size={14} fill={isSaved ? 'currentColor' : 'none'} />{isSaved ? 'Saved to archive' : 'Save this pick'}
         </button>
       </div>
