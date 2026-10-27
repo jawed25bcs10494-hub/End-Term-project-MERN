@@ -14,6 +14,7 @@ import {
   Star,
   Volume2,
 } from 'lucide-react'
+import { LicensedRomArcade } from '@/components/licensed-rom-arcade'
 
 type Game = {
   id: 'invaders' | 'pacman' | 'raycaster'
@@ -180,6 +181,8 @@ function RetroGateApp() {
             <div className="catalog-footnote"><Volume2 size={14} /><span>BEST PLAYED WITH SOUND ON</span></div>
           </aside>
         </section>
+
+        <LicensedRomArcade />
 
         <footer className="site-footer"><span>RETROGATE <i>©</i> THE GOLDEN AGE OF PLAY</span><span>THREE ERAS. INFINITE QUARTERS.</span></footer>
       </div>
